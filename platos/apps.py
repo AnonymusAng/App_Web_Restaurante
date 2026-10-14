@@ -1,0 +1,5 @@
+from django.apps import AppConfig
+class PlatosConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "platos"
+    verbose_name = "Gestión de platos"
