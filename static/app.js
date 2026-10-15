@@ -1,12 +1,12 @@
 const API = { platos: "/api/platos/", mesas: "/api/mesas/", pedidos: "/api/pedidos/" };
 const cache = { platos: [], mesas: [], pedidos: [] };
 const $ = (selector, root = document) => root.querySelector(selector);
-const escapeHTML = (value = "") => String(value).replace(/[&<>"']/g, c => { const map = {"&":"&amp;", "<":"&lt;", ">":"&gt;", "\"":"&quot;", "'":"&#39;"}; return map[c]; });
-const money = value => new Intl.NumberFormat("es-CO", {style:"currency", currency:"COP", maximumFractionDigits:0}).format(Number(value));
+const escapeHTML = (value = "") => String(value).replace(/[&<>"']/g, c => { const map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }; return map[c]; });
+const money = value => new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(Number(value));
 function notify(message, type = "success") { const box = $("#alerta"); box.textContent = message; box.className = `alert show ${type}`; window.setTimeout(() => box.classList.remove("show"), 4200); }
 async function request(url, options = {}) {
-  const response = await fetch(url, {headers:{"Content-Type":"application/json", ...(options.headers || {})}, ...options});
-  if (!response.ok) { let detail = `Error ${response.status}`; try { const data = await response.json(); detail = Object.entries(data).map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(", ") : value}`).join(" · "); } catch {} throw new Error(detail); }
+  const response = await fetch(url, { headers: { "Content-Type": "application/json", ...(options.headers || {}) }, ...options });
+  if (!response.ok) { let detail = `Error ${response.status}`; try { const data = await response.json(); detail = Object.entries(data).map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(", ") : value}`).join(" · "); } catch { } throw new Error(detail); }
   return response.status === 204 ? null : response.json();
 }
 function actions(resource, item) { return `<div class="row-actions"><button type="button" data-action="edit" data-resource="${resource}" data-id="${item.id}">Editar</button><button type="button" class="delete" data-action="delete" data-resource="${resource}" data-id="${item.id}">Borrar</button></div>`; }
@@ -46,22 +46,54 @@ function formObject(form, resource) {
   if (["cantidad", "mesa", "plato", "numero", "capacidad"].some(k => k in payload)) for (const k of ["cantidad", "mesa", "plato", "numero", "capacidad"]) if (k in payload) payload[k] = Number(payload[k]);
   return payload;
 }
-function resetForm(form) { form.reset(); form.elements.id.value = ""; const cancel = $(".cancel-edit", form); cancel.hidden = true; $("button[type=submit]", form).textContent = `Guardar ${form.id.replace("form-", "").slice(0,-1)}`; if (form.id === "form-pedidos") form.elements.cantidad.value = 1; }
+function resetForm(form) {
+  const formId = form.getAttribute("id");
+
+  form.reset();
+  form.elements.id.value = "";
+
+  const cancel = $(".cancel-edit", form);
+  cancel.hidden = true;
+
+  const nombre = formId.replace("form-", "").slice(0, -1);
+  $("button[type=submit]", form).textContent = `Guardar ${nombre}`;
+
+  if (formId === "form-pedidos") {
+    form.elements.cantidad.value = 1;
+  }
+}
 for (const resource of Object.keys(API)) {
   const form = $(`#form-${resource}`);
+  if (!form) continue;
+
   form.addEventListener("submit", async event => {
-    event.preventDefault(); const id = form.elements.id.value; const url = id ? `${API[resource]}${id}/` : API[resource];
-    try { await request(url, {method:id ? "PUT" : "POST", body:JSON.stringify(formObject(form, resource))}); resetForm(form); await loadAll(); notify(id ? "Registro actualizado." : "Registro creado y visible en la tabla."); }
-    catch (error) { notify(`No se pudo guardar: ${error.message}`, "error"); }
+    event.preventDefault();
+
+    const id = form.elements.namedItem("id").value;
+    const url = id ? `${API[resource]}${id}/` : API[resource];
+
+    try {
+      await request(url, {
+        method: id ? "PUT" : "POST",
+        body: JSON.stringify(formObject(form, resource))
+      });
+
+      resetForm(form);
+      await loadAll();
+      notify(id ? "Registro actualizado." : "Registro creado y visible en la tabla.");
+    } catch (error) {
+      notify(`No se pudo guardar: ${error.message}`, "error");
+    }
   });
+
   $(".cancel-edit", form).addEventListener("click", () => resetForm(form));
 }
 document.addEventListener("click", async event => {
   const button = event.target.closest("button[data-action]"); if (!button) return;
-  const {action, resource, id} = button.dataset; const item = cache[resource].find(record => String(record.id) === id); if (!item) return;
+  const { action, resource, id } = button.dataset; const item = cache[resource].find(record => String(record.id) === id); if (!item) return;
   if (action === "delete") {
     if (!window.confirm("¿Eliminar este registro?")) return;
-    try { await request(`${API[resource]}${id}/`, {method:"DELETE"}); await loadAll(); notify("Registro eliminado."); }
+    try { await request(`${API[resource]}${id}/`, { method: "DELETE" }); await loadAll(); notify("Registro eliminado."); }
     catch (error) { notify(`No se puede eliminar: ${error.message}. Revisa si existen pedidos relacionados.`, "error"); }
     return;
   }
@@ -70,6 +102,6 @@ document.addEventListener("click", async event => {
   for (const [key, value] of Object.entries(item)) if (form.elements[key]) form.elements[key].value = value ?? "";
   if (resource === "platos") form.elements.disponible.checked = item.disponible;
   form.elements.id.value = item.id; $(".cancel-edit", form).hidden = false; $("button[type=submit]", form).textContent = "Actualizar";
-  form.scrollIntoView({behavior:"smooth", block:"center"});
+  form.scrollIntoView({ behavior: "smooth", block: "center" });
 });
 document.addEventListener("DOMContentLoaded", loadAll);
