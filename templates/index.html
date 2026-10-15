@@ -1,0 +1,69 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Panel de gestión de platos, mesas y pedidos de restaurante">
+  <title>Mesa y Sazón | Gestión del restaurante</title>
+  <link rel="stylesheet" href="{% static 'styles.css' %}">
+  <script defer src="{% static 'app.js' %}"></script>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="brand-mark" aria-hidden="true">M<span>&</span>S</div>
+      <div><p class="eyebrow">SISTEMA DE GESTIÓN</p><h1>Mesa y Sazón</h1><p class="hero-copy">Administra el menú, la distribución de mesas y los pedidos desde un solo lugar.</p></div>
+      <a class="api-link" href="/api/" target="_blank" rel="noreferrer">Explorar API ↗</a>
+    </div>
+  </header>
+  <main class="page-shell">
+    <div id="alerta" class="alert" role="status" aria-live="polite"></div>
+    <section class="summary" aria-label="Resumen del restaurante">
+      <article><span class="summary-icon">🍽</span><div><span class="summary-label">Platos en carta</span><strong id="total-platos">0</strong></div></article>
+      <article><span class="summary-icon">◉</span><div><span class="summary-label">Mesas registradas</span><strong id="total-mesas">0</strong></div></article>
+      <article><span class="summary-icon">↗</span><div><span class="summary-label">Pedidos activos</span><strong id="total-pedidos">0</strong></div></article>
+    </section>
+    <div class="section-heading"><div><p class="eyebrow">OPERACIÓN DIARIA</p><h2>Panel del restaurante</h2></div><span class="live-badge"><i></i> API conectada</span></div>
+    <section class="resource-grid">
+      <article class="panel" id="panel-platos">
+        <div class="panel-heading"><div><span class="kicker">01 / MENÚ</span><h3>Platos</h3><p>Productos disponibles para pedir.</p></div><span class="count" id="count-platos">0</span></div>
+        <form id="form-platos" class="form-grid">
+          <input type="hidden" name="id">
+          <label>Nombre<input name="nombre" maxlength="100" required placeholder="Ej. Trucha a la plancha"></label>
+          <label>Precio (COP)<input name="precio" type="number" min="0" step="100" required placeholder="28000"></label>
+          <label class="wide">Descripción<input name="descripcion" maxlength="250" placeholder="Acompañantes o detalle del plato"></label>
+          <label class="check-row"><input name="disponible" type="checkbox" checked> Disponible en el menú</label>
+          <div class="form-actions"><button class="button primary" type="submit">Guardar plato</button><button class="button quiet cancel-edit" type="button" hidden>Cancelar</button></div>
+        </form>
+        <div class="table-wrap"><table><thead><tr><th>Plato</th><th>Precio</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tabla-platos"></tbody></table></div>
+      </article>
+      <article class="panel" id="panel-mesas">
+        <div class="panel-heading"><div><span class="kicker">02 / SALÓN</span><h3>Mesas</h3><p>Capacidad y estado del salón.</p></div><span class="count" id="count-mesas">0</span></div>
+        <form id="form-mesas" class="form-grid">
+          <input type="hidden" name="id">
+          <label>Número<input name="numero" type="number" min="1" required placeholder="1"></label>
+          <label>Capacidad<input name="capacidad" type="number" min="1" required placeholder="4"></label>
+          <label>Ubicación<input name="ubicacion" maxlength="80" placeholder="Terraza"></label>
+          <label>Estado<select name="estado"><option value="disponible">Disponible</option><option value="ocupada">Ocupada</option><option value="mantenimiento">Mantenimiento</option></select></label>
+          <div class="form-actions"><button class="button primary" type="submit">Guardar mesa</button><button class="button quiet cancel-edit" type="button" hidden>Cancelar</button></div>
+        </form>
+        <div class="table-wrap"><table><thead><tr><th>Mesa</th><th>Personas</th><th>Ubicación / estado</th><th>Acciones</th></tr></thead><tbody id="tabla-mesas"></tbody></table></div>
+      </article>
+      <article class="panel panel-wide" id="panel-pedidos">
+        <div class="panel-heading"><div><span class="kicker">03 / COMANDAS</span><h3>Pedidos</h3><p>Cada pedido conecta un plato con una mesa.</p></div><span class="count" id="count-pedidos">0</span></div>
+        <form id="form-pedidos" class="form-grid order-form">
+          <input type="hidden" name="id">
+          <label>Mesa<select name="mesa" required><option value="">Selecciona una mesa</option></select></label>
+          <label>Plato<select name="plato" required><option value="">Selecciona un plato</option></select></label>
+          <label>Cantidad<input name="cantidad" type="number" min="1" value="1" required></label>
+          <label>Estado<select name="estado"><option value="recibido">Recibido</option><option value="preparacion">En preparación</option><option value="listo">Listo</option><option value="entregado">Entregado</option><option value="cancelado">Cancelado</option></select></label>
+          <label class="wide">Notas<input name="notas" maxlength="250" placeholder="Sin cebolla, término medio…"></label>
+          <div class="form-actions"><button class="button primary" type="submit">Guardar pedido</button><button class="button quiet cancel-edit" type="button" hidden>Cancelar</button></div>
+        </form>
+        <div class="table-wrap"><table><thead><tr><th>#</th><th>Mesa</th><th>Pedido</th><th>Cant.</th><th>Estado</th><th>Notas</th><th>Acciones</th></tr></thead><tbody id="tabla-pedidos"></tbody></table></div>
+      </article>
+    </section>
+    <footer>Proyecto académico · Desarrollo de Aplicaciones Web · Grupo 3</footer>
+  </main>
+</body>
+</html>
